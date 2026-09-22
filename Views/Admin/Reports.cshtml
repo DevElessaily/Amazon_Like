@@ -1,0 +1,131 @@
+@{
+    ViewData["Title"] = "Reports";
+    var flaggedReviews = ViewBag.FlaggedReviews as ICollection<portofolio3.Models.Review> ?? new List<portofolio3.Models.Review>();
+    var pendingProducts = ViewBag.PendingProducts as ICollection<portofolio3.Models.Product> ?? new List<portofolio3.Models.Product>();
+    var pendingSellers = ViewBag.PendingSellers as ICollection<portofolio3.Models.Seller> ?? new List<portofolio3.Models.Seller>();
+    var lowStock = ViewBag.LowStockProducts as ICollection<portofolio3.Models.Product> ?? new List<portofolio3.Models.Product>();
+}
+
+<div class="mb-4">
+    <h2>Reports</h2>
+</div>
+
+<h4 class="mb-3">Pending seller approvals</h4>
+@if (!pendingSellers.Any())
+{
+    <div class="alert alert-success">All sellers are approved.</div>
+}
+else
+{
+    <table class="table table-hover align-middle mb-4">
+        <thead>
+            <tr><th>Shop</th><th>Owner</th><th>Email</th><th>Joined</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var s in pendingSellers)
+            {
+                <tr>
+                    <td>@s.ShopName</td>
+                    <td>@s.FullName</td>
+                    <td>@s.Email</td>
+                    <td>@s.CreatedAt.ToString("g")</td>
+                    <td class="text-end">
+                        <form asp-action="ApproveSeller" asp-route-id="@s.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-success btn-sm">Approve</button>
+                        </form>
+                        <a asp-action="SellerDetails" asp-route-id="@s.Id" class="btn btn-outline-primary btn-sm">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4 class="mb-3">Pending product approvals</h4>
+@if (!pendingProducts.Any())
+{
+    <div class="alert alert-success">All products are approved.</div>
+}
+else
+{
+    <table class="table table-hover align-middle mb-4">
+        <thead>
+            <tr><th>Product</th><th>Seller</th><th>Price</th><th>Stock</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var p in pendingProducts)
+            {
+                <tr>
+                    <td>@p.Name</td>
+                    <td>@(p.Seller?.ShopName ?? "—")</td>
+                    <td>&euro;@p.Price.ToString("N2")</td>
+                    <td>@p.Stock</td>
+                    <td class="text-end">
+                        <form asp-action="ApproveProduct" asp-route-id="@p.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-success btn-sm">Approve</button>
+                        </form>
+                        <form asp-action="RejectProduct" asp-route-id="@p.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Reject and hide this product?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4 class="mb-3">Low stock (&le;5)</h4>
+@if (!lowStock.Any())
+{
+    <div class="alert alert-success">All products are sufficiently stocked.</div>
+}
+else
+{
+    <table class="table table-hover align-middle mb-4">
+        <thead>
+            <tr><th>Product</th><th>Seller</th><th>Stock</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var p in lowStock)
+            {
+                <tr>
+                    <td>@p.Name</td>
+                    <td>@(p.Seller?.ShopName ?? "—")</td>
+                    <td><span class="badge rounded-pill text-bg-danger">@p.Stock left</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4 class="mb-3">Flagged reviews (rating &le; 2)</h4>
+@if (!flaggedReviews.Any())
+{
+    <div class="alert alert-success">No flagged reviews.</div>
+}
+else
+{
+    <table class="table table-hover align-middle mb-4">
+        <thead>
+            <tr><th>Product</th><th>User</th><th>Rating</th><th>Comment</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var r in flaggedReviews)
+            {
+                <tr>
+                    <td>@(r.Product?.Name ?? "—")</td>
+                    <td>@(r.User?.Name ?? "—")</td>
+                    <td>@r.Rating/5</td>
+                    <td class="text-wrap" style="max-width:360px">@(r.Comment ?? "—")</td>
+                    <td class="text-end">
+                        <form asp-action="DeleteReview" asp-route-id="@r.Id" method="post"
+                              onsubmit="return confirm('Delete this review?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

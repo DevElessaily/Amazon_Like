@@ -1,0 +1,82 @@
+@model portofolio3.Models.Cart
+
+@{
+    ViewData["Title"] = "Cart";
+    var items = Model.Items.Where(i => i.Product != null).ToList();
+    var total = items.Sum(i => i.Quantity * i.Product.Price);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Cart</h2>
+    <a asp-controller="Shop" asp-action="Index" class="text-decoration-none">&larr; Continue shopping</a>
+</div>
+
+@if (!items.Any())
+{
+    <div class="alert alert-info">Your cart is empty.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Item</th>
+                    <th>Unit price</th>
+                    <th style="width:140px">Quantity</th>
+                    <th>Total</th>
+                    <th class="text-end">Remove</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in items)
+                {
+                    var img = item.Product.Images.FirstOrDefault()?.ImageUrl ?? "/images/products/default.svg";
+                    <tr>
+                        <td><img src="@img" alt="" style="width:50px;height:50px;object-fit:cover;border-radius:4px" /></td>
+                        <td>
+                            <a asp-controller="Shop" asp-action="Details" asp-route-id="@item.ProductId" class="text-decoration-none fw-semibold">@item.Product.Name</a>
+                            <div class="text-muted small">@item.Product.Seller?.ShopName</div>
+                        </td>
+                        <td>$@item.Product.Price.ToString("N2")</td>
+                        <td>
+                            <form asp-action="Update" asp-route-cartItemId="@item.Id" method="post" class="d-flex gap-1">
+                                <input type="number" name="quantity" value="@item.Quantity" min="1" max="@(item.Product.Stock)" class="form-control form-control-sm" />
+                                <button type="submit" class="btn btn-outline-primary btn-sm">Update</button>
+                            </form>
+                        </td>
+                        <td>$@((item.Quantity * item.Product.Price).ToString("N2"))</td>
+                        <td class="text-end">
+                            <form asp-action="Remove" asp-route-cartItemId="@item.Id" method="post"
+                                  onsubmit="return confirm('Remove this item from your cart?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-end mb-4">
+        <div class="card shadow-sm" style="width:320px">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal</span>
+                    <span class="fw-bold">$@total.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Shipping</span>
+                    <span>Free</span>
+                </div>
+                <hr />
+                <div class="d-flex justify-content-between fs-5 mb-3">
+                    <span>Total</span>
+                    <span class="fw-bold">$@total.ToString("N2")</span>
+                </div>
+                <a asp-action="Checkout" class="btn btn-primary w-100">Proceed to checkout</a>
+            </div>
+        </div>
+    </div>
+}

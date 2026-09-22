@@ -1,0 +1,61 @@
+@model ICollection<portofolio3.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Checkout";
+    var items = Model.ToList();
+    var total = items.Sum(i => i.Quantity * i.Product.Price);
+}
+
+<div class="mb-4">
+    <h2>Checkout</h2>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="mb-3">Shipping & payment</h5>
+                <form asp-action="PlaceOrder" method="post">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label for="ShippingAddress" class="form-label">Shipping address</label>
+                        <textarea name="ShippingAddress" id="ShippingAddress" class="form-control" rows="3"
+                                  placeholder="Street, city, region, postal code, country"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="PaymentMethod" class="form-label">Payment method</label>
+                        <select name="PaymentMethod" id="PaymentMethod" class="form-select">
+                            <option value="Cash on Delivery">Cash on Delivery</option>
+                            <option value="Credit Card" selected="@(ViewBag.PaymentMethod == "Credit Card")">Credit Card</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Place order</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="mb-3">Order summary</h5>
+                @foreach (var item in items)
+                {
+                    var img = item.Product.Images.FirstOrDefault()?.ImageUrl ?? "/images/products/default.svg";
+                    <div class="d-flex gap-3 align-items-center mb-3">
+                        <img src="@img" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:6px" />
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">@item.Product.Name</div>
+                            <div class="text-muted small">@item.Quantity &times; $@item.Product.Price.ToString("N2")</div>
+                        </div>
+                        <div class="fw-semibold">$@((item.Quantity * item.Product.Price).ToString("N2"))</div>
+                    </div>
+                }
+                <hr />
+                <div class="d-flex justify-content-between fs-5">
+                    <span>Total</span>
+                    <span class="fw-bold">$@total.ToString("N2")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

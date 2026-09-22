@@ -1,0 +1,59 @@
+@model portofolio3.Models.Product
+
+@{
+    ViewData["Title"] = "Add Product";
+    var categories = ViewBag.Categories as ICollection<portofolio3.Models.Category> ?? new List<portofolio3.Models.Category>();
+}
+
+<a asp-action="Products" class="text-decoration-none">&larr; Back to products</a>
+<h2 class="mt-2 mb-4">Add product</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="CreateProduct" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label asp-for="Price" class="form-label"></label>
+                    <input asp-for="Price" class="form-control" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+                <div class="col-6 mb-3">
+                    <label asp-for="Stock" class="form-label"></label>
+                    <input asp-for="Stock" class="form-control" />
+                    <span asp-validation-for="Stock" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label">Category</label>
+                <select asp-for="CategoryId" class="form-select">
+                    <option value="">Select a category</option>
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label for="NewImage" class="form-label">Product image</label>
+                <input type="file" name="NewImage" id="NewImage" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                <span asp-validation-for="Images" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Create product</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

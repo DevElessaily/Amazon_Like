@@ -1,0 +1,126 @@
+@model portofolio3.Models.Seller
+
+@{
+    ViewData["Title"] = Model.ShopName;
+}
+
+<a asp-action="Sellers" class="text-decoration-none">&larr; Back to sellers</a>
+
+<div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+    <div class="d-flex align-items-center gap-3">
+        @if (!string.IsNullOrWhiteSpace(Model.ProfileImage))
+        {
+            <img src="@Model.ProfileImage" alt="@Model.ShopName" style="width:64px;height:64px;object-fit:cover;border-radius:50%" />
+        }
+        <div>
+            <h2 class="mb-0">@Model.ShopName</h2>
+            <div class="text-muted">@Model.FullName</div>
+        </div>
+    </div>
+    @if (Model.IsApproved)
+    {
+        <span class="badge rounded-pill text-bg-success">Approved</span>
+    }
+    else
+    {
+        <span class="badge rounded-pill text-bg-warning">Pending approval</span>
+    }
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-3">Contact</h6>
+                <div><strong>Email:</strong> @Model.Email</div>
+                <div><strong>Phone:</strong> @(Model.Phone ?? "—")</div>
+                <div><strong>Joined:</strong> @Model.CreatedAt.ToString("g")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-3">Stats</h6>
+                <div><strong>Products:</strong> @Model.Products.Count</div>
+                @{
+                    var totalStock = Model.Products.Sum(p => p.Stock);
+                    var avgPrice = Model.Products.Count > 0 ? Model.Products.Average(p => p.Price) : 0m;
+                }
+                <div><strong>Total stock:</strong> @totalStock</div>
+                <div><strong>Avg price:</strong> &euro;@avgPrice.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-3">Actions</h6>
+                <div class="d-flex gap-2">
+                    @if (!Model.IsApproved)
+                    {
+                        <form asp-action="ApproveSeller" asp-route-id="@Model.Id" method="post">
+                            <button type="submit" class="btn btn-outline-success">Approve</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="RejectSeller" asp-route-id="@Model.Id" method="post">
+                            <button type="submit" class="btn btn-outline-warning">Suspend</button>
+                        </form>
+                    }
+                    <form asp-action="DeleteSeller" asp-route-id="@Model.Id" method="post"
+                          onsubmit="return confirm('Delete this seller and all their products?');">
+                        <button type="submit" class="btn btn-outline-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">Products</h4>
+@if (!Model.Products.Any())
+{
+    <div class="alert alert-info">This seller has no products.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Approved</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Products)
+                {
+                    var img = p.Images.FirstOrDefault()?.ImageUrl ?? "/images/products/default.svg";
+                    <tr>
+                        <td><img src="@img" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:4px" /></td>
+                        <td>@p.Name</td>
+                        <td>@(p.Category?.Name ?? "—")</td>
+                        <td>&euro;@p.Price.ToString("N2")</td>
+                        <td>@p.Stock</td>
+                        <td>
+                            @if (p.IsApproved)
+                            {
+                                <span class="badge rounded-pill text-bg-success">Yes</span>
+                            }
+                            else
+                            {
+                                <span class="badge rounded-pill text-bg-warning">No</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

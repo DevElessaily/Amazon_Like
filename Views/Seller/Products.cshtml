@@ -1,0 +1,84 @@
+@model ICollection<portofolio3.Models.Product>
+
+@{
+    ViewData["Title"] = "My Products";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Products</h2>
+    <a asp-action="CreateProduct" class="btn btn-primary">Add product</a>
+</div>
+
+@if (TempData["Error"] is string err)
+{
+    <div class="alert alert-danger">@err</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">You haven't listed any products yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Reviews</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    var img = p.Images.FirstOrDefault()?.ImageUrl ?? "/images/products/default.svg";
+                    <tr>
+                        <td><img src="@img" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:4px" /></td>
+                        <td>
+                            <div>@p.Name</div>
+                            <div class="text-muted small">@p.Description</div>
+                        </td>
+                        <td>@(p.Category?.Name ?? "—")</td>
+                        <td>$@p.Price.ToString("N2")</td>
+                        <td>
+                            @if (p.Stock <= 5)
+                            {
+                                <span class="badge rounded-pill text-bg-danger">@p.Stock</span>
+                            }
+                            else
+                            {
+                                @p.Stock
+                            }
+                        </td>
+                        <td class="text-center">@p.Reviews.Count</td>
+                        <td>
+                            @if (p.IsApproved)
+                            {
+                                <span class="badge rounded-pill text-bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge rounded-pill text-bg-warning">Pending</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a asp-action="EditProduct" asp-route-id="@p.Id" class="btn btn-outline-primary btn-sm">Edit</a>
+                                <form asp-action="DeleteProduct" asp-route-id="@p.Id" method="post"
+                                      onsubmit="return confirm('Delete this product?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

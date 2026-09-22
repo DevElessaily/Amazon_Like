@@ -1,0 +1,116 @@
+@model portofolio3.Models.Seller
+
+@{
+    ViewData["Title"] = "Seller Dashboard";
+    var products = ViewBag.Products as ICollection<portofolio3.Models.Product> ?? new List<portofolio3.Models.Product>();
+    var recentOrders = ViewBag.RecentOrders as ICollection<portofolio3.Models.Order> ?? new List<portofolio3.Models.Order>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">@Model.ShopName</h2>
+        <div class="text-muted">@Model.FullName</div>
+    </div>
+    <a asp-action="CreateProduct" class="btn btn-primary">Add product</a>
+</div>
+
+@if (ViewBag.NotApproved == true)
+{
+    <div class="alert alert-warning">
+        Your shop is awaiting admin approval. You cannot manage products until it is approved.
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Total Revenue</div>
+                    <div class="fs-4 fw-bold">$@(((decimal)ViewBag.TotalRevenue).ToString("N2"))</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Units Sold</div>
+                    <div class="fs-4 fw-bold">@ViewBag.UnitsSold</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Orders</div>
+                    <div class="fs-4 fw-bold">@ViewBag.OrderCount</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Total Stock</div>
+                    <div class="fs-4 fw-bold">@ViewBag.TotalStock</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Products</div>
+                    <div class="fs-4 fw-bold">@products.Count</div>
+                    @if ((int)ViewBag.ApprovedProducts > 0)
+                    {
+                        <span class="badge rounded-pill text-bg-success">@ViewBag.ApprovedProducts approved</span>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Awaiting Approval</div>
+                    <div class="fs-4 fw-bold">@ViewBag.PendingProducts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Recent orders</h4>
+    @if (!recentOrders.Any())
+    {
+        <div class="alert alert-info">No orders yet.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Your items</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ro in recentOrders)
+                    {
+                        var sellerLines = string.Join(", ", ro.Items
+                            .Where(i => i.Product.SellerId == Model.Id)
+                            .Select(i => $"{i.Product.Name} x{i.Quantity}"));
+                        <tr>
+                            <td>@ro.Id</td>
+                            <td>@(ro.User?.Name ?? "—")</td>
+                            <td>@ro.OrderDate.ToString("g")</td>
+                            <td>@sellerLines</td>
+                            <td><span class="badge rounded-pill text-bg-secondary">@ro.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}

@@ -1,0 +1,84 @@
+@model portofolio3.Models.Product
+
+@{
+    ViewData["Title"] = Model.Name;
+    var images = Model.Images.ToList();
+    var img = images.FirstOrDefault()?.ImageUrl ?? "/images/products/default.svg";
+}
+
+<a asp-action="Index" class="text-decoration-none">&larr; Back to products</a>
+
+<div class="row mt-3 g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <img src="@img" class="card-img-top" alt="@Model.Name" style="max-height:420px;object-fit:cover" />
+        </div>
+        @if (images.Count > 1)
+        {
+            <div class="d-flex gap-2 mt-2">
+                @foreach (var i in images)
+                {
+                    <img src="@i.ImageUrl" alt="" style="width:70px;height:70px;object-fit:cover;border-radius:6px" />
+                }
+            </div>
+        }
+    </div>
+    <div class="col-md-6">
+        <div class="text-muted small mb-1">@Model.Category?.Name</div>
+        <h2 class="mb-2">@Model.Name</h2>
+        <p class="text-muted mb-2">by @Model.Seller?.ShopName</p>
+        <div class="h3 fw-bold">$@Model.Price.ToString("N2")</div>
+
+        @if (Model.Stock > 0)
+        {
+            <p class="text-success mb-1">In stock (@Model.Stock available)</p>
+            <form asp-controller="Cart" asp-action="Add" method="post" class="mb-3">
+                <div class="input-group" style="max-width:220px">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="number" name="quantity" value="1" min="1" max="@Model.Stock" class="form-control" />
+                    <button type="submit" class="btn btn-primary">Add to cart</button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <p class="text-danger mb-3">Out of stock</p>
+        }
+
+        <h6 class="mt-4 mb-2">Description</h6>
+        <p class="text-muted">@(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)</p>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<h4 class="mb-3">Reviews (@Model.Reviews.Count)</h4>
+@if (!Model.Reviews.Any())
+{
+    <div class="alert alert-info">No reviews yet.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var r in Model.Reviews)
+        {
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>@(r.User?.Name ?? "Anonymous")</strong>
+                            <span class="text-warning">
+                                @for (var i = 1; i <= 5; i++)
+                                {
+                                    @(i <= r.Rating ? "★" : "☆")
+                                }
+                            </span>
+                        </div>
+                        <p class="card-text mb-0">@(r.Comment ?? "—")</p>
+                        <div class="text-muted small mt-1">@r.CreatedAt.ToString("g")</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,76 @@
+@model ICollection<portofolio3.Models.Order>
+
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Orders</h2>
+    <span class="text-muted">@Model.Count order(s)</span>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No orders yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model)
+                {
+                    <tr>
+                        <td>@o.Id</td>
+                        <td>
+                            <div>@(o.User?.Name ?? "—")</div>
+                            <div class="text-muted small">@(o.User?.Email ?? "")</div>
+                        </td>
+                        <td>@o.OrderDate.ToString("g")</td>
+                        <td>
+                            @if (o.Items.Any())
+                            {
+                                @($"{o.Items.Sum(i => i.Quantity)} qty")
+                                <div class="text-muted small">@string.Join(", ", o.Items.Select(i => i.Product?.Name).Where(n => n != null).Take(2))</div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>&euro;@o.TotalAmount.ToString("N2")</td>
+                        <td>
+                            <span class="badge rounded-pill text-bg-@(o.Status switch { "Delivered" => "success", "Refunded" => "danger", "Pending" => "warning", "Cancelled" => "secondary", _ => "secondary" })">@o.Status</span>
+                        </td>
+                        <td class="text-end">
+                            @if (o.Status == "Pending")
+                            {
+                                <form asp-action="MarkOrderDelivered" asp-route-id="@o.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-success btn-sm">Mark delivered</button>
+                                </form>
+                            }
+                            @if (o.Status is not ("Refunded" or "Cancelled"))
+                            {
+                                <form asp-action="RefundOrder" asp-route-id="@o.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Refund this order?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Refund</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

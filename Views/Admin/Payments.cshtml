@@ -1,0 +1,101 @@
+@{
+    ViewData["Title"] = "Payments";
+    var orders = ViewBag.Orders as ICollection<portofolio3.Models.Order> ?? new List<portofolio3.Models.Order>();
+    var breakdown = ViewBag.PaymentBreakdown as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+}
+
+<div class="mb-4">
+    <h2>Payments</h2>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Gross Sales</div>
+                <div class="fs-4 fw-bold">&euro;@(((decimal)ViewBag.TotalSales).ToString("N2"))</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Commission (10%)</div>
+                <div class="fs-4 fw-bold">&euro;@(((decimal)ViewBag.Commission).ToString("N2"))</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Net to Sellers</div>
+                <div class="fs-4 fw-bold">&euro;@(((decimal)ViewBag.TotalSales - (decimal)ViewBag.Commission).ToString("N2"))</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (breakdown.Any())
+{
+    <div class="table-responsive mb-4">
+        <table class="table table-sm w-auto">
+            <thead>
+                <tr><th>Status</th><th>Count</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var g in breakdown)
+                {
+                    <tr>
+                        <td><span class="badge rounded-pill text-bg-secondary">@g.Status</span></td>
+                        <td>@g.Count</td>
+                        <td>&euro;@(((decimal)g.Amount).ToString("N2"))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<h4 class="mb-3">All payments</h4>
+@if (!orders.Any())
+{
+    <div class="alert alert-info">No payments yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in orders)
+                {
+                    <tr>
+                        <td>@o.Id</td>
+                        <td>@(o.User?.Name ?? "—")</td>
+                        <td>@o.OrderDate.ToString("g")</td>
+                        <td>&euro;@o.TotalAmount.ToString("N2")</td>
+                        <td><span class="badge rounded-pill text-bg-@(o.Status switch { "Delivered" => "success", "Refunded" => "danger", "Pending" => "warning", _ => "secondary" })">@o.Status</span></td>
+                        <td class="text-end">
+                            @if (o.Status is not ("Refunded" or "Cancelled"))
+                            {
+                                <form asp-action="RefundOrder" asp-route-id="@o.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Refund this order?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Refund</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

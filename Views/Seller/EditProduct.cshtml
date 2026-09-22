@@ -1,0 +1,83 @@
+@model portofolio3.Models.Product
+
+@{
+    ViewData["Title"] = "Edit Product";
+    var categories = ViewBag.Categories as ICollection<portofolio3.Models.Category> ?? new List<portofolio3.Models.Category>();
+}
+
+<a asp-action="Products" class="text-decoration-none">&larr; Back to products</a>
+<h2 class="mt-2 mb-4">Edit product</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="EditProduct" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label asp-for="Price" class="form-label"></label>
+                    <input asp-for="Price" class="form-control" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+                <div class="col-6 mb-3">
+                    <label asp-for="Stock" class="form-label"></label>
+                    <input asp-for="Stock" class="form-control" />
+                    <span asp-validation-for="Stock" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label">Category</label>
+                <select asp-for="CategoryId" class="form-select">
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label for="NewImage" class="form-label">Add another image</label>
+                <input type="file" name="NewImage" id="NewImage" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+            </div>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <h5 class="mb-3">Current images</h5>
+        @if (!Model.Images.Any())
+        {
+            <div class="alert alert-info">No images.</div>
+        }
+        else
+        {
+            <div class="row g-2">
+                @foreach (var img in Model.Images)
+                {
+                    <div class="col-6">
+                        <div class="card">
+                            <img src="@img.ImageUrl" class="card-img-top" alt="" style="height:120px;object-fit:cover" />
+                            <div class="card-body p-2 text-end">
+                                <form asp-action="DeleteImage" asp-route-productId="@Model.Id" asp-route-imageId="@img.Id" method="post"
+                                      onsubmit="return confirm('Remove this image?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

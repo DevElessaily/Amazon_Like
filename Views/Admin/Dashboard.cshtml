@@ -1,0 +1,106 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var recentOrders = ViewBag.RecentOrders as ICollection<portofolio3.Models.Order> ?? new List<portofolio3.Models.Order>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Dashboard</h2>
+    <a class="btn btn-outline-primary btn-sm" asp-action="Reports">View Reports</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Total Sales</div>
+                <div class="fs-4 fw-bold">&euro;@(((decimal)ViewBag.TotalSales).ToString("N2"))</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Orders</div>
+                <div class="fs-4 fw-bold">@ViewBag.OrderCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Products</div>
+                <div class="fs-4 fw-bold">@ViewBag.ProductCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Sellers</div>
+                <div class="fs-4 fw-bold">@ViewBag.SellerCount</div>
+                @if ((int)ViewBag.PendingSellers > 0)
+                {
+                    <span class="badge rounded-pill text-bg-warning">@ViewBag.PendingSellers pending approval</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Accounts</div>
+                <div class="fs-4 fw-bold">@ViewBag.UserCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Products Awaiting Approval</div>
+                <div class="fs-4 fw-bold">@ViewBag.PendingProducts</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Low Stock (&le;5)</div>
+                <div class="fs-4 fw-bold">@ViewBag.LowStock</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">Recent orders</h4>
+@if (!recentOrders.Any())
+{
+    <div class="alert alert-info">No orders yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in recentOrders)
+                {
+                    <tr>
+                        <td>@o.Id</td>
+                        <td>@(o.User?.Name ?? "—")</td>
+                        <td>@o.OrderDate.ToString("g")</td>
+                        <td>&euro;@o.TotalAmount.ToString("N2")</td>
+                        <td><span class="badge rounded-pill text-bg-@(o.Status switch { "Delivered" => "success", "Refunded" => "danger", "Pending" => "warning", _ => "secondary" })">@o.Status</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
